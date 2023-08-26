@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: file-uploader
+  name: file-uploader
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      io.kompose.service: file-uploader
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: file-uploader
+    spec:
+      containers:
+      - args:
+        - ./wait-for-it.sh
+        - rabbitmq:5672
+        - --
+        - python
+        - ./app.py
+        env:
+        - name: IN_CONTAINER_FLAG
+          value: "1"
+        image: diarmuidk/wacc:file-uploader
+        imagePullPolicy: Always
+        name: file-uploader
+#        volumeMounts:
+#          # name should match from volumes section
+#          - name: logs-volume-1
+#            mountPath: "/logs"
+        ports:
+        - containerPort: 3500
+        resources: {}
+      imagePullSecrets:
+        - name: regcred
+
+      restartPolicy: Always
+      serviceAccountName: ""
+#      volumes:
+#        - name: logs-volume-1
+#          persistentVolumeClaim:
+#            claimName: nfs-logs-pvc
+status: {}

@@ -1,0 +1,40 @@
+{
+  "db": {
+    "url": "mongodb://mongodb:27017/",
+    "name": "fileServiceMngr",
+    "gridFS_name": "files",
+    "user": "",
+    "password": ""
+  },
+  "aws": {
+    "access_key": "x",
+    "secret_access_key": "x",
+    "upload_file_bucket": "weightsbucket",
+    "upload_file_key": "weights"
+  },
+  "logging": {
+    "file_path": "logs/logFile.txt"
+  },
+  "rabbitmq_config": {
+    "user": "guest",
+    "password": "guest",
+    "host": "rabbitmq",
+    "port": 5672,
+    "queue_name": "file_uploads_queue",
+    "connection_timeout_s": 1200,
+    "idle_connection_timeout_s": 1800,
+    "connection_retry_s": 15,
+    "connection_retry_attempts": 5
+  },
+  "index_cache_config": {
+    "service_name": "mymaster",
+    "master_host": "127.0.0.1",
+    "master_port": 6379,
+    "slave_1_host": "127.0.0.1",
+    "slave_1_port": 6379,
+    "slave_2_host": "127.0.0.1",
+    "slave_2_port": 6379,
+    "slave_3_host": "127.0.0.1",
+    "slave_3_port": 6379
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rabbitmq_config": {
+    "user": "guest",
+    "password": "guest",
+    "host": "127.0.0.1",
+    "port": 5672,
+    "queue_name": "admin_notification_queue",
+    "connection_timeout_s": 1200,
+    "idle_connection_timeout_s": 1800,
+    "connection_retry_s": 15,
+    "connection_retry_attempts": 5
+  },
+  "logging": {
+    "file_path": "logs/logFile-gateway.txt"
+  }
+}

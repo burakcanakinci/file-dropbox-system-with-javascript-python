@@ -1,0 +1,611 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  ports:
+  - name: "27017"
+    port: 27017
+    targetPort: 27017
+  selector:
+    io.kompose.service: mongodb
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgresdb
+  name: postgresdb
+spec:
+  ports:
+  - name: "5432"
+    port: 5432
+    targetPort: 5432
+  selector:
+    io.kompose.service: postgresdb
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - name: "5672"
+    port: 5672
+    targetPort: 5672
+  - name: "15672"
+    port: 15672
+    targetPort: 15672
+  selector:
+    io.kompose.service: rabbitmq
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis
+  name: redis
+spec:
+  ports:
+  - name: "6379"
+    port: 6379
+    targetPort: 6379
+  selector:
+    io.kompose.service: redis
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-1
+  name: sentinel-1
+spec:
+  ports:
+  - name: "26379"
+    port: 26379
+    targetPort: 26379
+  selector:
+    io.kompose.service: sentinel-1
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-2
+  name: sentinel-2
+spec:
+  ports:
+  - name: "26379"
+    port: 26379
+    targetPort: 26379
+  selector:
+    io.kompose.service: sentinel-2
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-3
+  name: sentinel-3
+spec:
+  ports:
+  - name: "26379"
+    port: 26379
+    targetPort: 26379
+  selector:
+    io.kompose.service: sentinel-3
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: user_auth
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgresdb
+  name: postgresdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: postgresdb
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: postgresdb
+    spec:
+      containers:
+      - envFrom:
+          - configMapRef:
+              name: postgres-config
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-vol
+            subPath: postgres
+        image: postgres
+        imagePullPolicy: ""
+        name: postgresdb
+        ports:
+        - containerPort: 5432
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+        - name: postgres-vol
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongodb
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: mongodb
+    spec:
+      containers:
+      - image: mongo:4.0.8
+        imagePullPolicy: ""
+        name: mongodb
+        ports:
+        - containerPort: 27017
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgresdb
+  name: postgresdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: postgresdb
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: postgresdb
+    spec:
+      containers:
+      - envFrom:
+          - configMapRef:
+              name: postgres-config
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-vol
+            subPath: postgres
+        image: postgres
+        imagePullPolicy: ""
+        name: postgresdb
+        ports:
+        - containerPort: 5432
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+        - name: postgres-vol
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rabbitmq
+  name: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: rabbitmq
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: rabbitmq
+    spec:
+      containers:
+      - image: rabbitmq:3-management-alpine
+        imagePullPolicy: Always
+        name: rabbitmq
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis
+    spec:
+      containers:
+      - args:
+        - redis-server
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis
+        ports:
+        - containerPort: 6379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-slave-1
+  name: redis-slave-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis-slave-1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis-slave-1
+    spec:
+      containers:
+      - args:
+        - redis-server
+        - --slaveof
+        - redis
+        - "6379"
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis-slave-1
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-slave-2
+  name: redis-slave-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis-slave-2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis-slave-2
+    spec:
+      containers:
+      - args:
+        - redis-server
+        - --slaveof
+        - redis
+        - "6379"
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis-slave-2
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-1
+  name: sentinel-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-1
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-1
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-2
+  name: sentinel-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-2
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-2
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-3
+  name: sentinel-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-3
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-3
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-3
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

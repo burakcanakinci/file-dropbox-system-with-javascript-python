@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    wacc-app: auth
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      wacc-app: auth
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        wacc-app: auth
+    spec:
+      containers:
+      - args:
+        - ./wait-for-it.sh
+        - postgresdb:5432/auth_db
+        - --
+        - python
+        - ./app.py
+        env:
+        - name: DATABASE_HOST
+          value: postgresdb
+        - name: IN_CONTAINER_FLAG
+          value: "1"
+        image: diarmuidk/wacc:auth-service
+        imagePullPolicy: ""
+        name: auth
+        ports:
+        - containerPort: 4000
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

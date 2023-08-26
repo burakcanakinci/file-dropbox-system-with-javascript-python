@@ -1,0 +1,49 @@
+version: '3.1'
+
+services:
+
+  postgresdb:
+    image: postgres
+    restart: always
+    ports:
+    - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: user_auth
+    volumes:
+    - ./postgres:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresdb
+
+  auth:
+    build: back_end/src/auth
+    ports:
+      - 4000:4000
+    depends_on:
+      - postgresdb
+    links:
+      - postgresdb
+    environment:
+      DATABASE_HOST: postgresdb
+    command: ["./wait-for-it.sh", "postgresdb:5432/auth_db", "--", "python", "./app.py"]
+
+  socket-gateway:
+    build: back_end/src/gateway
+    ports:
+    - 50000:50000
+
+  front-end:
+    build: front_end/Dockerfile.prod
+    ports:
+      - 80:80
+    stdin_open: true
+
+
+

@@ -1,0 +1,256 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis
+    spec:
+      containers:
+      - args:
+        - redis-server
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis
+        ports:
+        - containerPort: 6379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-slave-1
+  name: redis-slave-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis-slave-1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis-slave-1
+    spec:
+      containers:
+      - args:
+        - redis-server
+        - --slaveof
+        - redis
+        - "6379"
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis-slave-1
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-slave-2
+  name: redis-slave-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis-slave-2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: redis-slave-2
+    spec:
+      containers:
+      - args:
+        - redis-server
+        - --slaveof
+        - redis
+        - "6379"
+        image: redis:3
+        imagePullPolicy: ""
+        name: redis-slave-2
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-1
+  name: sentinel-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-1
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-1
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-2
+  name: sentinel-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-2
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-2
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\kompose\kompose.exe convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sentinel-3
+  name: sentinel-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: sentinel-3
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\kompose\kompose.exe convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: sentinel-3
+    spec:
+      containers:
+      - env:
+        - name: SENTINEL_DOWN_AFTER
+          value: "5000"
+        - name: SENTINEL_FAILOVER
+          value: "500"
+        - name: SENTINEL_QUORUM
+          value: "2"
+        image: diarmuidk/wacc:sentinels
+        imagePullPolicy: ""
+        name: sentinel-3
+        ports:
+        - containerPort: 26379
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

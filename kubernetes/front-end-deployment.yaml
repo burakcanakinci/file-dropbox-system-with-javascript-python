@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: front-end
+  name: front-end
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      io.kompose.service: front-end
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker_network: "true"
+        io.kompose.service: front-end
+    spec:
+      containers:
+      - image: diarmuidk/wacc:front-end
+        imagePullPolicy: Always
+        name: front-end
+        ports:
+        - containerPort: 80
+        resources: {}
+        stdin: true
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

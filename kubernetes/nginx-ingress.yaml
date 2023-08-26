@@ -1,0 +1,89 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wacc
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /
+          backend:
+            serviceName: front-end
+            servicePort: 80
+        - path: /auth
+          backend:
+            serviceName: auth
+            servicePort: 4000
+#        - path: /socket.io
+#          backend:
+#            serviceName: socket-gateway
+#            servicePort: 5000
+        - path: /postgres
+          backend:
+            serviceName: adminer
+            servicePort: 8080
+
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wacc-socket
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "ingress-cookie"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /socket.io
+          backend:
+            serviceName: socket-gateway
+            servicePort: 5000
+
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wacc-nopath
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: $1
+
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /rabbitmq(.*)
+          backend:
+            serviceName: rabbitmq
+            servicePort: 15672
+        - path: /kibana(.*)
+          backend:
+            serviceName: kibana
+            servicePort: 5601
+        - path: /portainer(.*)
+          backend:
+            serviceName: portainer
+            servicePort: 9000
+
+#        - path: /rabbitmq
+#          backend:
+#            serviceName: rabbitmq
+#            servicePort: 15672
+#        - path: /kibana
+#          backend:
+#            serviceName: kibana
+#            servicePort: 5601
+#        - path: /portainer
+#          backend:
+#            serviceName: portainer
+#            servicePort: 9000

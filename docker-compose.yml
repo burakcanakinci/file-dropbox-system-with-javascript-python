@@ -1,0 +1,267 @@
+version: '3.1'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+    - 5672:5672
+    - 15672:15672
+    networks:
+    - docker_network
+
+  postgresdb:
+    image: postgres
+    restart: always
+    ports:
+    - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: user_auth
+    volumes:
+    - ./postgres:/var/lib/postgresql/data
+    networks:
+    - docker_network
+
+#  postgresdb-test:
+#      image: postgres
+#      restart: always
+#      ports:
+#      - 5433:5432
+#      environment:
+#        POSTGRES_PASSWORD: postgres
+#        POSTGRES_USER: postgres
+#        POSTGRES_DB: user_auth_test
+#      volumes:
+#      - ./postgres-test:/var/lib/postgresql/data
+#      networks:
+#      - docker_network
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresdb
+    networks:
+    - docker_network
+
+  auth:
+    image: diarmuidk/wacc:auth-service
+    build: back_end/src/auth
+    ports:
+      - 4000:4000
+    depends_on:
+      - postgresdb
+    environment:
+      DATABASE_HOST: postgresdb
+      IN_CONTAINER_FLAG: 1
+    networks:
+    - docker_network
+
+    command: ["./wait-for-it.sh", "postgresdb:5432/auth_db", "--", "python", "./app.py"]
+
+  socket-gateway:
+    image: diarmuidk/wacc:socket-gateway
+    build: back_end/src/gateway
+    ports:
+    - 5000:5000
+    networks:
+    - docker_network
+    environment:
+      IN_CONTAINER_FLAG: 1
+    volumes:
+      - ./gateway-store:/src/tmp
+      - ./logs:/logs
+    command: [ "python", "./gateway.py" ]
+
+
+  file-uploader:
+    image: diarmuidk/wacc:file-uploader
+    build: back_end/src/file_uploader
+    ports:
+      - 3500:3500
+    networks:
+      - docker_network
+    environment:
+      IN_CONTAINER_FLAG: 1
+    volumes:
+      - ./uploader-store:/src/tmp
+    command: [ "./wait-for-it.sh", "rabbitmq:5672", "--", "python", "./app.py" ]
+
+  front-end:
+    image: diarmuidk/wacc:front-end
+    build:
+      context: front_end
+      dockerfile: Dockerfile.prod
+    ports:
+      - 3000:80
+    stdin_open: true
+    networks:
+      - docker_network
+
+  redis:
+    image: redis:3
+    command: redis-server
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis-data:/var/lib/redis
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - docker_network
+
+  redis-slave-1:
+    image: redis:3
+    command: redis-server --slaveof redis 6379
+    ports:
+      - 6379:6379
+    depends_on:
+      - redis
+    networks:
+      - docker_network
+
+  redis-slave-2:
+    image: redis:3
+    command: redis-server --slaveof redis 6379
+    ports:
+      - 6379:6379
+    depends_on:
+       - redis
+    networks:
+    - docker_network
+
+  sentinel-1:
+    image: diarmuidk/wacc:sentinels
+    ports:
+      - 26379:26379
+    environment:
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=500
+      - SENTINEL_QUORUM=2
+    depends_on:
+      - redis
+      - redis-slave-1
+      - redis-slave-2
+    networks:
+      - docker_network
+
+  sentinel-2:
+      image: diarmuidk/wacc:sentinels
+      ports:
+        - 26379:26379
+      environment:
+        - SENTINEL_DOWN_AFTER=5000
+        - SENTINEL_FAILOVER=500
+        - SENTINEL_QUORUM=2
+      depends_on:
+        - redis
+        - redis-slave-1
+        - redis-slave-2
+      networks:
+        - docker_network
+
+  sentinel-3:
+      image: diarmuidk/wacc:sentinels
+      ports:
+        - 26379:26379
+      environment:
+        - SENTINEL_DOWN_AFTER=5000
+        - SENTINEL_FAILOVER=500
+        - SENTINEL_QUORUM=2
+      depends_on:
+        - redis
+        - redis-slave-1
+        - redis-slave-2
+      networks:
+        - docker_network
+
+#  etcd:
+#    image: 'bitnami/etcd:latest'
+#    environment:
+#      - ALLOW_NONE_AUTHENTICATION=yes
+#      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+#    volumes:
+#      - ./back_end/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml
+#    ports:
+#      - 2379:2379
+#      - 2380:2380
+#    networks:
+#      - docker_network
+
+  fsm:
+    image: diarmuidk/wacc:fsm
+    build: ./back_end/src/fileServiceMngr/app
+    container_name: fsm
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - redis
+    ports:
+      - 4500:4500
+    volumes:
+    - ./logs:/logs
+    networks:
+    - docker_network
+    environment:
+      IN_CONTAINER_FLAG: 1
+    command: ["./wait-for-it.sh", "rabbitmq:5672", "--", "python", "./views.py"]
+
+  mongodb:
+    image: mongo:4.0.8
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    networks:
+    - docker_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+    networks:
+    - docker_network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.2
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+      - logstash
+    networks:
+    - docker_network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.2
+    container_name: logstash
+    volumes:
+      - .:/etc/logstash
+      - ./logs:/logs
+    command: logstash -f /etc/logstash/back_end/src/fileServiceMngr/app/logstash.conf
+    ports:
+       - 9600:9600
+    depends_on:
+      - elasticsearch
+    networks:
+    - docker_network
+
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer-data:/data
+    ports:
+      - 10001:9000
+
+networks:
+  docker_network:
+    driver: bridge

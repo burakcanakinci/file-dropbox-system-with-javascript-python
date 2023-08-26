@@ -1,0 +1,2 @@
+2020-10-20 16:16:51,156 - INFO - [File Uploader] Starting server
+2020-10-20 16:16:52,156 - INFO -  * Running on http://0.0.0.0:3500/ (Press CTRL+C to quit)

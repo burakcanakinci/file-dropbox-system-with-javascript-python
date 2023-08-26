@@ -1,0 +1,58 @@
+{
+    "index_cache_config": {
+        "service_name": "mymaster",
+        "master_host": "127.0.0.1",
+        "master_port": 6379,
+        "slave_1_host": "127.0.0.1",
+        "slave_1_port": 6379,
+        "slave_2_host": "127.0.0.1",
+        "slave_2_port": 6379,
+        "slave_3_host": "127.0.0.1",
+        "slave_3_port": 6379
+    },
+    "file_cache_config": {
+        "service_name": "mymaster",
+        "master_host": "127.0.0.1",
+        "master_port": 6379,
+        "slave_1_host": "127.0.0.1",
+        "slave_1_port": 6379,
+        "slave_2_host": "127.0.0.1",
+        "slave_2_port": 6379,
+        "slave_3_host": "127.0.0.1",
+        "slave_3_port": 6379
+    },
+    "file_rabbitmq_config": {
+        "user": "guest",
+        "password": "guest",
+        "host": "127.0.0.1",
+        "port": "5672",
+        "connection_timeout_s": 1200,
+        "idle_connection_timeout_s": 1800,
+        "connection_retry_s": 15,
+        "connection_retry_attempts": 5,
+        "queue_name": "file_uploads_queue"
+    },
+    "user_rabbitmq_config": {
+        "user": "guest",
+        "password": "guest",
+        "host": "127.0.0.1",
+        "port": "5672",
+        "connection_timeout_s": 1200,
+        "idle_connection_timeout_s": 1800,
+        "connection_retry_s": 15,
+        "connection_retry_attempts": 5,
+        "queue_name": "user_notification_queue"
+    },
+    "admin_rabbitmq_config": {
+        "user": "guest",
+        "password": "guest",
+        "host": "127.0.0.1",
+        "port": "5672",
+        "connection_timeout_s": 1200,
+        "idle_connection_timeout_s": 1800,
+        "connection_retry_s": 15,
+        "connection_retry_attempts": 5,
+        "queue_name": "admin_notification_queue"
+    },
+    "log_file_path": "logs/log_file.txt"
+}
